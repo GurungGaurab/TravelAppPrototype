@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 2px 10px rgba(0,0,0,0.07); --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 50%, #fce7f3 100%);
+            background-attachment: fixed;
+            color: var(--text); line-height: 1.55; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .header { background: var(--white); border-bottom: 1px solid var(--border); }
+        .header-inner {
+            max-width: 1140px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between; height: 60px;
+        }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links .btn-nav { background: var(--teal); color: #fff; font-weight: 600; }
+        .nav-links .btn-nav:hover { background: var(--teal-dark); color: #fff; }
+
+        .login-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+        .login-card {
+            background: var(--white); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+            padding: 40px 36px; width: 100%; max-width: 440px; border: 1px solid var(--border);
+        }
+        .login-card h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .login-card .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+        .demo-box { background: var(--teal-light); border: 1px solid #99f6e4; border-radius: var(--radius); padding: 12px 16px; margin-bottom: 20px; }
+        .demo-box p { font-size: 0.82rem; color: var(--text-sec); margin-bottom: 2px; }
+        .demo-box code { font-weight: 700; color: var(--teal-dark); font-size: 0.85rem; }
+        .alert { padding: 10px 14px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; margin-bottom: 14px; }
+        .alert-success { background: var(--teal-light); color: var(--teal-dark); border-left: 3px solid var(--teal); }
+        .alert-error { background: #fef2f2; color: var(--coral-dark); border-left: 3px solid var(--coral); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+        .form-group input {
+            width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius);
+            font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white); transition: all 0.15s;
+        }
+        .form-group input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; width: 100%; }
+        .btn-primary:hover { background: var(--teal-dark); }
+        .btn-accent { background: var(--plum); color: #fff; }
+        .btn-accent:hover { background: #6d28d9; }
+        .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+        .login-divider { text-align: center; color: var(--text-muted); font-size: 0.82rem; margin: 20px 0; position: relative; }
+        .login-divider::before, .login-divider::after { content: ''; position: absolute; top: 50%; width: 38%; height: 1px; background: var(--border); }
+        .login-divider::before { left: 0; } .login-divider::after { right: 0; }
+        .token-row { background: var(--bg); border-radius: var(--radius); padding: 14px; display: flex; gap: 8px; align-items: flex-end; }
+        .token-row .form-group { flex: 1; margin-bottom: 0; }
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .login-card { padding: 28px 20px; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/shared-itinerary">Shared Trips</a>
+            <a href="/register" class="btn-nav">Register</a>
+        </div>
+    </div>
+</header>
+
+<div class="login-wrapper">
+    <div class="login-card">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to manage your trips and bookings</p>
+
+        <div class="demo-box">
+            <p>Demo credentials</p>
+            <p><code>demo@travelapp.com</code> / <code>password</code></p>
+        </div>
+
+        <p class="alert alert-success" th:if="${param.registered}">Registration complete. You can sign in now.</p>
+        <p class="alert alert-success" th:if="${param.logout}">You have been logged out.</p>
+        <p class="alert alert-error" th:if="${param.error}">Login failed. Please check your email and password.</p>
+
+        <form method="post" action="/login">
+            <div class="form-group">
+                <label for="username">Email address</label>
+                <input id="username" name="username" type="email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:4px;">Sign in</button>
+        </form>
+
+        <div class="login-divider">or open a shared trip</div>
+
+        <div class="token-row">
+            <form action="/shared-itinerary/open" method="get" style="display:flex; gap:8px; align-items:flex-end; width:100%;">
+                <div class="form-group" style="flex:1; margin-bottom:0;">
+                    <label for="shareToken">Share token</label>
+                    <input id="shareToken" name="shareToken" type="text" placeholder="Paste token here" required>
+                </div>
+                <button type="submit" class="btn btn-accent btn-sm" style="height:41px;">Open</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

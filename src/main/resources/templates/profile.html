@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Profile</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.07); --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+
+        .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links form { display: inline; }
+        .nav-links button { background: none; border: none; color: var(--coral); padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .nav-links button:hover { background: #fef2f2; }
+
+        .detail-hero { background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 60%, #fce7f3 100%); padding: 32px 24px; border-bottom: 1px solid var(--border); }
+        .detail-hero h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 6px; }
+        .detail-hero .meta { color: var(--text-sec); font-size: 0.95rem; }
+
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+        .card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; }
+        .card-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+        .icon-teal { background: var(--teal-light); color: var(--teal); }
+        .icon-plum { background: var(--plum-light); color: var(--plum); }
+
+        .email-display { background: var(--bg); border-radius: var(--radius); padding: 12px 16px; font-size: 0.9rem; color: var(--text-sec); margin-bottom: 16px; }
+        .email-display strong { color: var(--text); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white); transition: all 0.15s; }
+        .form-group input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; }
+        .btn-primary:hover { background: var(--teal-dark); }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .nav-links { flex-wrap: wrap; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trips">Travel Plans</a>
+            <a href="/profile" class="active">Profile</a>
+            <a href="/shared-itinerary">Share Trips</a>
+            <form method="post" action="/logout"><button type="submit">Logout</button></form>
+        </div>
+    </div>
+</header>
+
+<div class="detail-hero">
+    <div class="container">
+        <h1>Your Profile</h1>
+        <div class="meta">Update your travel preferences to get better recommendations</div>
+    </div>
+</div>
+
+<div class="container" style="margin-top:24px; padding-bottom:40px;">
+    <div class="card">
+        <div class="card-title"><span class="icon icon-plum">P</span> Profile Settings</div>
+
+        <div class="email-display">
+            <strong>Email:</strong> <span th:text="${profileUser.email}">email</span>
+        </div>
+
+        <form method="post" action="/profile">
+            <div class="form-group">
+                <label for="name">Full name</label>
+                <input id="name" name="name" type="text" th:value="${profileUser.name}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="personalInfo">Personal info</label>
+                <input id="personalInfo" name="personalInfo" type="text" th:value="${profileUser.personalInfo}" placeholder="A bit about yourself">
+            </div>
+
+            <div class="section-label">Travel Preferences</div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="travelPreferences">Travel preferences</label>
+                    <input id="travelPreferences" name="travelPreferences" type="text" th:value="${profileUser.travelPreferences}" placeholder="e.g. Adventure, Culture">
+                </div>
+                <div class="form-group">
+                    <label for="budgetRange">Budget range ($)</label>
+                    <input id="budgetRange" name="budgetRange" type="number" step="0.01" min="0" th:value="${profileUser.budgetRange != null ? profileUser.budgetRange : 0}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="interests">Interests</label>
+                <input id="interests" name="interests" type="text" th:value="${profileUser.interests}" placeholder="e.g. Food, Temples, Hiking">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:8px;">Save Profile</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

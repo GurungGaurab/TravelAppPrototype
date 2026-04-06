@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Travel Plan Details</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --sand: #fef3c7; --sand-dark: #f59e0b;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0; --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 2px 10px rgba(0,0,0,0.07); --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+
+        .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links form { display: inline; }
+        .nav-links button { background: none; border: none; color: var(--coral); padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .nav-links button:hover { background: #fef2f2; }
+
+        .detail-hero { background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 60%, #fce7f3 100%); padding: 32px 24px; border-bottom: 1px solid var(--border); }
+        .detail-hero h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 6px; }
+        .detail-hero .meta { color: var(--text-sec); font-size: 0.95rem; margin-bottom: 14px; }
+        .detail-hero .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+        .card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; }
+        .card-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+        .icon-teal { background: var(--teal-light); color: var(--teal); }
+        .icon-plum { background: var(--plum-light); color: var(--plum); }
+        .icon-coral { background: #fef2f2; color: var(--coral); }
+        .icon-sand { background: var(--sand); color: var(--sand-dark); }
+
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; }
+        .btn-primary:hover { background: var(--teal-dark); }
+        .btn-accent { background: var(--plum); color: #fff; }
+        .btn-accent:hover { background: #6d28d9; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-sec); }
+        .btn-ghost:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+        .btn-danger-ghost { background: transparent; border: 1px solid #fecaca; color: var(--coral); }
+        .btn-danger-ghost:hover { background: #fef2f2; border-color: var(--coral); }
+        .btn-danger { background: var(--coral); color: #fff; }
+        .btn-danger:hover { background: var(--coral-dark); }
+        .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+        .btn-block { width: 100%; }
+
+        /* Budget */
+        .budget-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+        .budget-box { border-radius: var(--radius); padding: 16px; text-align: center; }
+        .budget-box.total { background: #f0fdfa; }
+        .budget-box.spent { background: var(--sand); }
+        .budget-box.remaining { background: var(--plum-light); }
+        .budget-box .b-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 4px; }
+        .budget-box .b-value { font-size: 1.4rem; font-weight: 800; }
+        .progress-bar { width: 100%; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+        .progress-fill { height: 100%; border-radius: 99px; transition: width 0.3s; background: linear-gradient(90deg, var(--teal), #2dd4bf); }
+        .progress-fill.over { background: linear-gradient(90deg, var(--coral), #fca5a1); }
+        .warning-text { color: var(--coral); font-weight: 600; font-size: 0.85rem; }
+        .category-list { list-style: none; padding: 0; margin: 12px 0 0; }
+        .category-list li { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; }
+        .category-list li:nth-child(odd) { background: var(--bg); }
+
+        /* Booking options */
+        .booking-option { border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 16px; transition: all 0.15s; }
+        .booking-option:hover { border-color: var(--teal); background: #f0fdfa; }
+        .booking-info { flex: 1; }
+        .booking-info h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+        .booking-detail { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2px; }
+        .booking-right { text-align: right; min-width: 100px; }
+        .price-tag { font-size: 1.25rem; font-weight: 800; color: var(--text); }
+        .price-sub { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px; }
+
+        /* Booked state */
+        .booked-card { border: 1.5px solid var(--teal); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 10px; background: #f0fdfa; }
+        .booked-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; color: var(--teal-dark); }
+        .booked-card .booking-detail { font-size: 0.82rem; color: var(--text-sec); margin-bottom: 2px; }
+        .booked-label { display: inline-block; background: var(--teal-light); color: var(--teal-dark); font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; text-transform: uppercase; margin-bottom: 8px; }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white); transition: all 0.15s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        /* Activity list */
+        .activity-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 8px; transition: all 0.15s; }
+        .activity-item:hover { background: var(--bg); border-color: var(--border); }
+        .activity-info { flex: 1; }
+        .activity-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
+        .activity-meta { font-size: 0.78rem; color: var(--text-muted); }
+
+        /* Recommendations */
+        .reco-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+        .reco-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 18px; background: var(--white); transition: all 0.15s; }
+        .reco-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+        .reco-card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
+        .reco-type { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 8px; }
+        .reco-desc { font-size: 0.84rem; color: var(--text-sec); margin-bottom: 14px; line-height: 1.5; }
+        .reco-footer { display: flex; justify-content: space-between; align-items: center; }
+        .reco-cost { font-weight: 800; font-size: 0.95rem; }
+        .rating-pill { background: var(--sand); color: var(--sand-dark); font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+
+        /* Shared links */
+        .share-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; }
+        .share-item a { color: var(--teal); text-decoration: none; font-weight: 600; }
+        .share-item a:hover { text-decoration: underline; }
+        .share-token { background: var(--bg); padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: var(--text-sec); }
+        .share-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--plum-light); color: var(--plum); text-transform: uppercase; }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .nav-links { flex-wrap: wrap; }
+            .budget-row { grid-template-columns: 1fr; }
+            .booking-option { flex-direction: column; align-items: flex-start; }
+            .booking-right { text-align: left; }
+            .form-row { grid-template-columns: 1fr; }
+            .reco-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trips">Travel Plans</a>
+            <a href="/profile">Profile</a>
+            <a href="/shared-itinerary">Share Trips</a>
+            <form method="post" action="/logout"><button type="submit">Logout</button></form>
+        </div>
+    </div>
+</header>
+
+<div class="detail-hero">
+    <div class="container">
+        <h1 th:text="${trip.tripName}">Trip Name</h1>
+        <div class="meta">
+            <span th:text="${trip.destination}">Destination</span> &middot;
+            <span th:text="${trip.startDate}">Start</span> to <span th:text="${trip.endDate}">End</span> &middot;
+            Budget: $<span th:text="${trip.totalBudget}">0</span>
+        </div>
+        <div class="actions">
+            <a th:href="@{'/trips/' + ${trip.id} + '/flow'}" class="btn btn-primary btn-sm">Itinerary Summary</a>
+            <form th:action="@{'/trips/' + ${trip.id} + '/delete'}" method="post" style="margin:0;">
+                <button type="submit" class="btn btn-danger-ghost btn-sm" onclick="return confirm('Delete this travel plan?');">Delete Trip</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="margin-top:24px; padding-bottom:40px;">
+
+    <!-- Budget -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-teal">$</span> Travel Budget</div>
+        <div class="budget-row">
+            <div class="budget-box total">
+                <div class="b-label">Total Budget</div>
+                <div class="b-value">$<span th:text="${trip.budget != null ? trip.budget.totalBudget : trip.totalBudget}">0.0</span></div>
+            </div>
+            <div class="budget-box spent">
+                <div class="b-label">Spent</div>
+                <div class="b-value">$<span th:text="${displaySpentAmount}">0.0</span></div>
+            </div>
+            <div class="budget-box remaining">
+                <div class="b-label">Remaining</div>
+                <div class="b-value">$<span th:text="${displayRemainingAmount}">0.0</span></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" th:classappend="${overBudget} ? ' over' : ''" th:style="'width:' + ${budgetSpentPercentage} + '%'"></div>
+        </div>
+        <p style="font-size:0.82rem; color:var(--text-muted);">
+            Budget used: <strong th:text="${#numbers.formatDecimal(budgetSpentPercentage, 1, 1)} + '%'">0.0%</strong>
+        </p>
+        <p th:if="${overBudget}" class="warning-text" style="margin-top:6px;">This trip is currently over budget.</p>
+        <p style="font-size:0.82rem; color:var(--text-muted); margin-top:8px;">Budget updates automatically when you book flights, accommodation, or save paid attractions.</p>
+
+        <div th:if="${!#lists.isEmpty(categorySpend)}" style="margin-top:16px;">
+            <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:8px;">Spending by Category</h4>
+            <ul class="category-list">
+                <li th:each="entry : ${categorySpend}">
+                    <span th:text="${entry.category}">Category</span>
+                    <strong>$<span th:text="${entry.amount}">0.0</span></strong>
+                </li>
+            </ul>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(displayExpenses)}" style="margin-top:16px;">
+            <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:8px;">Saved Expenses</h4>
+            <ul class="category-list">
+                <li th:each="expense : ${displayExpenses}">
+                    <span><span th:text="${expense.category}"></span> &middot; <span th:text="${expense.date}"></span> &middot; <span th:text="${expense.description}"></span></span>
+                    <strong>$<span th:text="${expense.amount}"></span></strong>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Share -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-plum">S</span> Share This Trip</div>
+        <p style="font-size:0.85rem; color:var(--text-sec); margin-bottom:14px;">Anyone with the shared link can open the itinerary, even without logging in.</p>
+        <form action="/shared-itinerary" method="post" style="margin-bottom:12px;">
+            <input type="hidden" name="tripId" th:value="${trip.id}">
+            <button type="submit" class="btn btn-accent btn-sm">Create Share Link</button>
+        </form>
+        <div th:if="${!#lists.isEmpty(sharedItineraries)}">
+            <div th:each="share : ${sharedItineraries}" class="share-item">
+                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}">Open itinerary</a>
+                <span class="share-token" th:text="${'/shared-itinerary/' + share.shareToken}">link</span>
+                <span class="share-badge" th:text="${share.accessLevel}">VIEW</span>
+                <span style="font-size:0.78rem; color:var(--text-muted);" th:text="${#temporals.format(share.createdAt, 'yyyy-MM-dd HH:mm')}">Created</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flights -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-coral">F</span> Flights</div>
+
+        <!-- Booked flight -->
+        <div th:if="${selectedFlightBooking != null}">
+            <div class="booked-card">
+                <span class="booked-label">Booked</span>
+                <h4 th:text="${selectedFlightBooking.airline + ' ' + selectedFlightBooking.flightNumber}">Flight</h4>
+                <div class="booking-detail"><span th:text="${selectedFlightBooking.origin}">Origin</span> &rarr; <span th:text="${selectedFlightBooking.destination}">Dest</span></div>
+                <div class="booking-detail">Outbound: <span th:text="${#temporals.format(selectedFlightBooking.departureDate, 'yyyy-MM-dd HH:mm')}">Dep</span> to <span th:text="${#temporals.format(selectedFlightBooking.arrivalDate, 'yyyy-MM-dd HH:mm')}">Arr</span></div>
+                <div class="booking-detail">Return: <span th:text="${#temporals.format(selectedFlightBooking.returnDepartureDate, 'yyyy-MM-dd HH:mm')}">RDep</span> to <span th:text="${#temporals.format(selectedFlightBooking.returnArrivalDate, 'yyyy-MM-dd HH:mm')}">RArr</span></div>
+                <div class="booking-detail" style="margin-top:4px;">Total: <strong>$<span th:text="${selectedFlightBooking.price}">0</span></strong></div>
+                <form th:action="@{'/bookings/' + ${selectedFlightBooking.id} + '/cancel'}" method="post" style="margin-top:10px;">
+                    <input type="hidden" name="tripId" th:value="${trip.id}">
+                    <button type="submit" class="btn btn-danger-ghost btn-sm">Cancel Flight</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Flight options -->
+        <div th:if="${selectedFlightBooking == null and !#lists.isEmpty(flightOptions)}">
+            <div th:each="flight : ${flightOptions}" class="booking-option">
+                <div class="booking-info">
+                    <h4 th:text="${flight.airline + ' ' + flight.flightNumber}">Flight</h4>
+                    <div class="booking-detail"><span th:text="${flight.origin}">Origin</span> &rarr; <span th:text="${flight.destination}">Dest</span></div>
+                    <div class="booking-detail">Out: <span th:text="${#temporals.format(flight.departureDate, 'yyyy-MM-dd HH:mm')}">Dep</span> &rarr; <span th:text="${#temporals.format(flight.arrivalDate, 'yyyy-MM-dd HH:mm')}">Arr</span></div>
+                    <div class="booking-detail">Ret: <span th:text="${#temporals.format(flight.returnDepartureDate, 'yyyy-MM-dd HH:mm')}">RDep</span> &rarr; <span th:text="${#temporals.format(flight.returnArrivalDate, 'yyyy-MM-dd HH:mm')}">RArr</span></div>
+                </div>
+                <div class="booking-right">
+                    <div class="price-tag">$<span th:text="${flight.price}">0</span></div>
+                    <div class="price-sub">round trip</div>
+                    <form action="/bookings/demo" method="post">
+                        <input type="hidden" name="tripId" th:value="${trip.id}">
+                        <input type="hidden" name="bookingType" value="FLIGHT">
+                        <input type="hidden" name="optionId" th:value="${flight.optionId}">
+                        <button type="submit" class="btn btn-primary btn-sm">Book</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div th:if="${selectedFlightBooking == null and #lists.isEmpty(flightOptions)}">
+            <p style="color:var(--text-muted); font-size:0.9rem;">No flight options found for this destination yet.</p>
+        </div>
+    </div>
+
+    <!-- Hotels -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-plum">H</span> Accommodation</div>
+
+        <!-- Booked hotel -->
+        <div th:if="${selectedHotelBooking != null}">
+            <div class="booked-card">
+                <span class="booked-label">Booked</span>
+                <h4 th:text="${selectedHotelBooking.hotelName}">Hotel</h4>
+                <div class="booking-detail" th:text="${selectedHotelBooking.location}">Location</div>
+                <div class="booking-detail">Stay: <span th:text="${selectedHotelBooking.checkInDate}">In</span> to <span th:text="${selectedHotelBooking.checkOutDate}">Out</span></div>
+                <div class="booking-detail" style="margin-top:4px;">Price per night: <strong>$<span th:text="${selectedHotelBooking.pricePerNight}">0</span></strong></div>
+                <form th:action="@{'/bookings/' + ${selectedHotelBooking.id} + '/cancel'}" method="post" style="margin-top:10px;">
+                    <input type="hidden" name="tripId" th:value="${trip.id}">
+                    <button type="submit" class="btn btn-danger-ghost btn-sm">Cancel Stay</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Hotel options -->
+        <div th:if="${selectedHotelBooking == null and !#lists.isEmpty(hotelOptions)}">
+            <div th:each="hotel : ${hotelOptions}" class="booking-option">
+                <div class="booking-info">
+                    <h4 th:text="${hotel.hotelName}">Hotel</h4>
+                    <div class="booking-detail"><span th:text="${hotel.location}">Location</span> &middot; <span th:text="${hotel.roomType}">Room</span></div>
+                    <div class="booking-detail"><span th:text="${hotel.checkInDate}">In</span> to <span th:text="${hotel.checkOutDate}">Out</span></div>
+                </div>
+                <div class="booking-right">
+                    <div class="price-tag">$<span th:text="${hotel.pricePerNight}">0</span></div>
+                    <div class="price-sub">per night</div>
+                    <form action="/bookings/demo" method="post">
+                        <input type="hidden" name="tripId" th:value="${trip.id}">
+                        <input type="hidden" name="bookingType" value="HOTEL">
+                        <input type="hidden" name="optionId" th:value="${hotel.optionId}">
+                        <button type="submit" class="btn btn-primary btn-sm">Book</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div th:if="${selectedHotelBooking == null and #lists.isEmpty(hotelOptions)}">
+            <p style="color:var(--text-muted); font-size:0.9rem;">No accommodation options found for this destination yet.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(trip.bookings)}" style="margin-top:16px;">
+            <h4 style="font-size:0.9rem; font-weight:700; margin-bottom:8px;">All Bookings</h4>
+            <ul class="category-list">
+                <li th:each="booking : ${trip.bookings}" th:text="${booking.bookingSummary}">Summary</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Activities -->
+    <div class="card" id="activities-section">
+        <div class="card-title"><span class="icon icon-sand">A</span> Plan Activities</div>
+        <form action="/activities" method="post">
+            <input type="hidden" name="tripId" th:value="${trip.id}">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Activity / Attraction</label>
+                    <input name="activityName" type="text" placeholder="e.g. Visit Senso-ji Temple" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input name="location" type="text" placeholder="e.g. Asakusa" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input name="date" type="date" th:min="${trip.startDate}" th:max="${trip.endDate}" th:value="${trip.startDate}" required>
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input name="amount" type="number" min="0" step="0.01" placeholder="0.00">
+                </div>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-muted); margin:-4px 0 12px;">New activities are auto-scheduled with a 30-minute gap. You can fine-tune the time later from edit.</p>
+            <div class="form-group">
+                <label>Description</label>
+                <input name="description" type="text" placeholder="Optional description" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add to Itinerary</button>
+        </form>
+
+        <div th:if="${!#lists.isEmpty(orderedActivities)}" style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap;">
+                <h4 style="font-size:0.9rem; font-weight:700;">Planned Activities</h4>
+                <div style="font-size:0.84rem; color:var(--text-sec);">
+                    Planned activity spend:
+                    <strong>$<span th:text="${#numbers.formatDecimal(activityPlannedAmount, 1, 2)}">0.00</span></strong>
+                </div>
+            </div>
+            <div th:each="activity : ${orderedActivities}" class="activity-item">
+                <div class="activity-info">
+                    <div class="activity-name" th:text="${activity.activityName}">Name</div>
+                    <div class="activity-meta">
+                        <span th:text="${activity.date}">Date</span>
+                        <span th:text="${'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '')}">Time</span>
+                        &middot; <span th:text="${activity.location}">Location</span>
+                    </div>
+                    <div th:if="${activity.amount != null}" class="activity-meta" style="margin-top:4px;">
+                        Estimated spend: <strong>$<span th:text="${#numbers.formatDecimal(activity.amount, 1, 2)}">0.00</span></strong>
+                    </div>
+                    <div th:if="${activity.description != null and !activity.description.isBlank()}" class="activity-meta" style="margin-top:4px;" th:text="${activity.description}">Description</div>
+                    <details style="margin-top:10px;">
+                        <summary style="cursor:pointer; color:var(--teal-dark); font-size:0.84rem; font-weight:600;">Edit activity</summary>
+                        <form th:action="@{'/activities/' + ${activity.id} + '/edit'}" method="post" style="margin-top:12px;">
+                            <input type="hidden" name="tripId" th:value="${trip.id}">
+                            <input type="hidden" name="view" value="details">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Activity / Attraction</label>
+                                    <input name="activityName" type="text" th:value="${activity.activityName}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    <input name="location" type="text" th:value="${activity.location}" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Date</label>
+                                    <input name="date" type="date" th:min="${trip.startDate}" th:max="${trip.endDate}" th:value="${activity.date}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Time</label>
+                                    <input name="time" type="time">
+                                </div>
+                                <div class="form-group">
+                                    <label>Amount</label>
+                                    <input name="amount" type="number" min="0" step="0.01" th:value="${activity.amount}">
+                                </div>
+                            </div>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:-4px 0 12px;">
+                                Current time:
+                                <strong th:text="${activity.time != null ? activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '') : 'Not set'}">10:00 to 13:00</strong>.
+                                Leave time blank to auto-place it 30 minutes after the latest activity that day.
+                            </p>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input name="description" type="text" th:value="${activity.description}" placeholder="Optional description" required>
+                            </div>
+                            <button type="submit" class="btn btn-accent btn-sm">Save Changes</button>
+                        </form>
+                    </details>
+                </div>
+                <form th:action="@{'/activities/' + ${activity.id} + '/delete'}" method="post" style="margin:0;">
+                    <input type="hidden" name="tripId" th:value="${trip.id}">
+                    <button type="submit" class="btn btn-danger-ghost btn-sm">Cancel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    <div class="card" th:if="${!#lists.isEmpty(recommendations)}">
+        <div class="card-title"><span class="icon icon-teal">R</span> Recommended for You</div>
+        <p style="font-size:0.84rem; color:var(--text-muted); margin-bottom:16px;">Suggestions based on your destination, preferences, interests, and budget</p>
+        <div class="reco-grid">
+            <div th:each="recommendation : ${recommendations}" class="reco-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:4px;">
+                    <h4 th:text="${recommendation.name}">Name</h4>
+                    <span class="rating-pill" th:text="${recommendation.rating}">4.5</span>
+                </div>
+                <div class="reco-type">
+                    <span th:text="${recommendation.type}">Type</span> &middot; <span th:text="${recommendation.location}">Location</span>
+                    <span th:if="${recommendation.preferenceTag != null and !recommendation.preferenceTag.isBlank()}"> &middot; Best for <span th:text="${recommendation.preferenceTag}">pref</span></span>
+                </div>
+                <div class="reco-desc" th:text="${recommendation.description}">Description</div>
+                <div class="reco-footer">
+                    <div class="reco-cost">
+                        <span th:if="${recommendation.estimatedCost != null}">~$<span th:text="${recommendation.estimatedCost}">0</span></span>
+                        <span th:unless="${recommendation.estimatedCost != null}" style="color:var(--teal);">Free</span>
+                    </div>
+                    <form action="/recommendations/add-to-itinerary" method="post" style="margin:0;">
+                        <input type="hidden" name="recommendationId" th:value="${recommendation.id}">
+                        <input type="hidden" name="tripId" th:value="${trip.id}">
+                        <button type="submit" class="btn btn-primary btn-sm">Add to Trip</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const activityDateInput = document.querySelector('input[name="date"]');
+    if (activityDateInput) {
+        const minDate = activityDateInput.getAttribute("min");
+        const maxDate = activityDateInput.getAttribute("max");
+        if (activityDateInput.value && minDate && activityDateInput.value < minDate) { activityDateInput.value = minDate; }
+        if (activityDateInput.value && maxDate && activityDateInput.value > maxDate) { activityDateInput.value = maxDate; }
+    }
+</script>
+</body>
+</html>

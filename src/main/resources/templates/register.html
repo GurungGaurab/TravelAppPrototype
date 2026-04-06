@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0;
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 50%, #fce7f3 100%);
+            background-attachment: fixed; color: var(--text); line-height: 1.55; min-height: 100vh;
+            display: flex; flex-direction: column;
+        }
+        .header { background: var(--white); border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links .btn-nav { background: var(--teal); color: #fff; font-weight: 600; }
+        .nav-links .btn-nav:hover { background: var(--teal-dark); color: #fff; }
+
+        .register-wrapper { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 40px 24px; }
+        .register-card {
+            background: var(--white); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+            padding: 40px 36px; width: 100%; max-width: 520px; border: 1px solid var(--border);
+        }
+        .register-card h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+        .register-card .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 24px; }
+        .alert-error { padding: 10px 14px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; margin-bottom: 14px; background: #fef2f2; color: var(--coral-dark); border-left: 3px solid var(--coral); }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+        .form-group input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white); transition: all 0.15s; }
+        .form-group input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .section-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin: 20px 0 12px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 10px 20px; border-radius: var(--radius); font-size: 0.9rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; width: 100%; }
+        .btn-primary:hover { background: var(--teal-dark); }
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .register-card { padding: 28px 20px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/login" class="btn-nav">Sign in</a>
+        </div>
+    </div>
+</header>
+
+<div class="register-wrapper">
+    <div class="register-card">
+        <h2>Create your account</h2>
+        <p class="subtitle">Set up your profile and travel preferences to get started</p>
+
+        <p class="alert-error" th:if="${errorMessage}" th:text="${errorMessage}">Error message</p>
+
+        <form method="post" action="/register">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name">Full name</label>
+                    <input id="name" name="name" type="text" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email address</label>
+                    <input id="email" name="email" type="email" placeholder="you@example.com" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" placeholder="Create a password" required>
+            </div>
+
+            <div class="section-label">Travel Profile (optional)</div>
+
+            <div class="form-group">
+                <label for="personalInfo">Personal info</label>
+                <input id="personalInfo" name="personalInfo" type="text" placeholder="A bit about yourself">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="travelPreferences">Travel preferences</label>
+                    <input id="travelPreferences" name="travelPreferences" type="text" placeholder="e.g. Adventure, Culture">
+                </div>
+                <div class="form-group">
+                    <label for="budgetRange">Budget range ($)</label>
+                    <input id="budgetRange" name="budgetRange" type="number" step="0.01" min="0" value="0" placeholder="0">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="interests">Interests</label>
+                <input id="interests" name="interests" type="text" placeholder="e.g. Food, Temples, Hiking">
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:8px;">Create Account</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Page Error</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0;
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: linear-gradient(160deg, #fef2f2 0%, #fce7f3 50%, #e0e7ff 100%);
+            background-attachment: fixed; color: var(--text); line-height: 1.55;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        .header { background: var(--white); border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+
+        .error-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
+        .error-card {
+            background: var(--white); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+            padding: 48px 40px; width: 100%; max-width: 480px; border: 1px solid var(--border); text-align: center;
+        }
+        .error-icon { font-size: 3rem; margin-bottom: 16px; }
+        .error-card h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: var(--coral); }
+        .error-card p { color: var(--text-sec); font-size: 0.95rem; margin-bottom: 24px; }
+        .error-links { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; }
+        .btn-primary:hover { background: var(--teal-dark); }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-sec); }
+        .btn-ghost:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+    </div>
+</header>
+
+<div class="error-wrapper">
+    <div class="error-card">
+        <div class="error-icon">!</div>
+        <h1>Something Went Wrong</h1>
+        <p th:text="${errorMessage != null ? errorMessage : 'The page could not be loaded.'}">The page could not be loaded.</p>
+        <div class="error-links">
+            <a href="/" class="btn btn-primary">Home</a>
+            <a href="/trips" class="btn btn-ghost">Travel Plans</a>
+            <a href="/shared-itinerary" class="btn btn-ghost">Shared Trips</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

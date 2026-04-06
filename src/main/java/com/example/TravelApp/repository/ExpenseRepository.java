@@ -1,0 +1,7 @@
+package com.example.TravelApp.repository;
+
+import com.example.TravelApp.model.Expense;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ExpenseRepository extends JpaRepository<Expense, Long> {
+}

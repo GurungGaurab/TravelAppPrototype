@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Shared Itinerary</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0; --border-light: #f1f5f9;
+            --shadow: 0 2px 10px rgba(0,0,0,0.07); --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+
+        .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links a.active { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links form { display: inline; }
+        .nav-links button.nav-btn { background: none; border: none; color: var(--coral); padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .nav-links button.nav-btn:hover { background: #fef2f2; }
+
+        .detail-hero { background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 60%, #fce7f3 100%); padding: 32px 24px; border-bottom: 1px solid var(--border); }
+        .detail-hero h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 6px; }
+        .detail-hero .meta { color: var(--text-sec); font-size: 0.95rem; }
+
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+        .card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; }
+        .card-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+        .icon-teal { background: var(--teal-light); color: var(--teal); }
+        .icon-plum { background: var(--plum-light); color: var(--plum); }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--text-sec); margin-bottom: 6px; }
+        .form-group input, .form-group select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: var(--radius); font-size: 0.9rem; font-family: inherit; color: var(--text); background: var(--white); transition: all 0.15s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.1); }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-primary { background: var(--teal); color: #fff; }
+        .btn-primary:hover { background: var(--teal-dark); }
+        .btn-accent { background: var(--plum); color: #fff; }
+        .btn-accent:hover { background: #6d28d9; }
+        .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+
+        .token-row { background: var(--bg); border-radius: var(--radius); padding: 14px; }
+        .token-row form { display: flex; gap: 8px; align-items: flex-end; width: 100%; }
+        .token-row .form-group { flex: 1; margin-bottom: 0; }
+
+        .share-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 8px; font-size: 0.85rem; flex-wrap: wrap; }
+        .share-item a { color: var(--teal); text-decoration: none; font-weight: 600; }
+        .share-item a:hover { text-decoration: underline; }
+        .share-token { background: var(--bg); padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 0.8rem; color: var(--text-sec); }
+        .share-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--plum-light); color: var(--plum); text-transform: uppercase; }
+        .empty-state { color: var(--text-muted); font-size: 0.9rem; }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .nav-links { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links" th:if="${authenticated}">
+            <a href="/">Home</a>
+            <a href="/trips">Travel Plans</a>
+            <a href="/profile">Profile</a>
+            <a href="/shared-itinerary" class="active">Share Trips</a>
+            <form method="post" action="/logout"><button type="submit" class="nav-btn">Logout</button></form>
+        </div>
+        <div class="nav-links" th:unless="${authenticated}">
+            <a href="/">Home</a>
+            <a href="/shared-itinerary" class="active">Shared Trips</a>
+            <a href="/login">Sign in</a>
+        </div>
+    </div>
+</header>
+
+<div class="detail-hero">
+    <div class="container">
+        <h1>Shared Itineraries</h1>
+        <div class="meta">Share your travel plans or open a shared trip with a token</div>
+    </div>
+</div>
+
+<div class="container" style="margin-top:24px; padding-bottom:40px;">
+
+    <!-- Open shared token -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-teal">T</span> Open Shared Trip</div>
+        <p style="font-size:0.85rem; color:var(--text-sec); margin-bottom:14px;">Paste a shared token below to open a trip without logging in.</p>
+        <div class="token-row">
+            <form action="/shared-itinerary/open" method="get">
+                <div class="form-group">
+                    <label>Shared Token</label>
+                    <input name="shareToken" type="text" placeholder="Paste token here" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm" style="height:41px;">Open</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create share link -->
+    <div class="card">
+        <div class="card-title"><span class="icon icon-plum">S</span> Share a Travel Plan</div>
+        <div th:if="${#lists.isEmpty(trips)}">
+            <p th:if="${authenticated}" class="empty-state">Create a travel plan first before sharing.</p>
+            <p th:unless="${authenticated}" class="empty-state">Log in to create a share link. People without an account can still open shared links directly.</p>
+        </div>
+        <form action="/shared-itinerary" method="post" th:if="${!#lists.isEmpty(trips)}">
+            <div class="form-group">
+                <label>Select Travel Plan</label>
+                <select name="tripId" required>
+                    <option th:each="trip : ${trips}" th:value="${trip.id}" th:text="${trip.tripName + ' - ' + trip.destination}"></option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-accent btn-sm">Create Share Link</button>
+        </form>
+    </div>
+
+    <!-- Existing share links -->
+    <div class="card" th:if="${authenticated}">
+        <div class="card-title"><span class="icon icon-teal">L</span> Your Share Links</div>
+        <div th:if="${#lists.isEmpty(sharedItineraries)}" class="empty-state">
+            <p>No share links yet.</p>
+        </div>
+        <div th:unless="${#lists.isEmpty(sharedItineraries)}">
+            <div th:each="share : ${sharedItineraries}" class="share-item">
+                <strong th:text="${share.trip.tripName}">Trip</strong>
+                <span style="color:var(--text-muted);" th:text="${share.trip.destination}">Dest</span>
+                <a th:href="@{'/trips/' + ${share.trip.id}}">Open plan</a>
+                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}">View itinerary</a>
+                <span class="share-token" th:text="${'/shared-itinerary/' + share.shareToken}">link</span>
+                <span class="share-badge" th:text="${share.accessLevel}">VIEW</span>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

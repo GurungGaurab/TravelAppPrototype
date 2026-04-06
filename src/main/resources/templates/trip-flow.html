@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Itinerary Summary</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal: #0d9488; --teal-dark: #0f766e; --teal-light: #ccfbf1;
+            --coral: #f97066; --coral-dark: #dc2626;
+            --plum: #7c3aed; --plum-light: #ede9fe;
+            --sand: #fef3c7; --sand-dark: #f59e0b;
+            --text: #1e293b; --text-sec: #64748b; --text-muted: #94a3b8;
+            --bg: #f8fafc; --white: #ffffff; --border: #e2e8f0;
+            --shadow: 0 2px 10px rgba(0,0,0,0.07); --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --radius: 10px; --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'DM Sans', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.55; }
+
+        .header { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .header-inner { max-width: 1140px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--teal); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--teal), var(--plum)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; }
+        .nav-links { display: flex; gap: 2px; align-items: center; }
+        .nav-links a { color: var(--text-sec); text-decoration: none; padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; transition: all 0.15s; }
+        .nav-links a:hover { background: var(--teal-light); color: var(--teal-dark); }
+        .nav-links form { display: inline; }
+        .nav-links button { background: none; border: none; color: var(--coral); padding: 8px 14px; border-radius: var(--radius); font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+        .nav-links button:hover { background: #fef2f2; }
+
+        .detail-hero { background: linear-gradient(160deg, #f0fdfa 0%, #e0e7ff 60%, #fce7f3 100%); padding: 32px 24px; border-bottom: 1px solid var(--border); }
+        .detail-hero h1 { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 6px; }
+        .detail-hero .meta { color: var(--text-sec); font-size: 0.95rem; margin-bottom: 10px; }
+
+        .container { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+        .card { background: var(--white); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; }
+        .card-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 16px; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 18px; border-radius: var(--radius); font-size: 0.85rem; font-weight: 600; font-family: inherit; text-decoration: none; border: none; cursor: pointer; transition: all 0.15s; }
+        .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-sec); }
+        .btn-ghost:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+        .btn-sm { padding: 6px 14px; font-size: 0.82rem; }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 32px; }
+        .timeline::before { content: ''; position: absolute; left: 11px; top: 4px; bottom: 4px; width: 2px; background: linear-gradient(to bottom, var(--teal), var(--plum), var(--coral)); border-radius: 2px; }
+        .tl-item { position: relative; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 12px; background: var(--white); transition: all 0.15s; }
+        .tl-item:hover { box-shadow: var(--shadow); border-color: transparent; }
+        .tl-item::before { content: ''; position: absolute; left: -27px; top: 20px; width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid #fff; }
+        .tl-item.flight::before { background: var(--coral); box-shadow: 0 0 0 3px rgba(249,112,102,0.25); }
+        .tl-item.hotel::before { background: var(--plum); box-shadow: 0 0 0 3px rgba(124,58,237,0.2); }
+        .tl-item.activity::before { background: var(--teal); box-shadow: 0 0 0 3px rgba(13,148,136,0.2); }
+        .tl-meta { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+        .tag-flight { background: #fef2f2; color: var(--coral-dark); }
+        .tag-hotel { background: var(--plum-light); color: var(--plum); }
+        .tag-activity { background: var(--teal-light); color: var(--teal-dark); }
+        .tl-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
+        .tl-detail { font-size: 0.85rem; color: var(--text-sec); }
+        .tl-actions { margin-top: 8px; display: flex; gap: 6px; }
+        .day-divider {
+            margin: 16px 0 10px;
+            padding-left: 4px;
+        }
+        .day-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, var(--teal-light), #e0e7ff);
+            color: var(--teal-dark);
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+        .day-date {
+            color: var(--text-sec);
+            font-weight: 600;
+        }
+
+        .empty-state { text-align: center; padding: 32px; color: var(--text-muted); }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 8px; }
+            .nav-links { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo"><span class="logo-icon">T</span> TravelApp</a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trips">Travel Plans</a>
+            <a href="/profile">Profile</a>
+            <a href="/shared-itinerary">Share Trips</a>
+            <form method="post" action="/logout"><button type="submit">Logout</button></form>
+        </div>
+    </div>
+</header>
+
+<div class="detail-hero">
+    <div class="container">
+        <h1 th:text="${trip.tripName + ' - Itinerary'}">Itinerary Summary</h1>
+        <div class="meta">
+            <span th:text="${trip.destination}">Destination</span> &middot;
+            <span th:text="${trip.startDate}">Start</span> to <span th:text="${trip.endDate}">End</span>
+        </div>
+        <a th:href="@{'/trips/' + ${trip.id}}" class="btn btn-ghost btn-sm">&larr; Back to Trip Details</a>
+    </div>
+</div>
+
+<div class="container" style="margin-top:24px; padding-bottom:40px;">
+    <div class="card">
+        <div class="card-title">Full Trip Timeline</div>
+
+        <div th:if="${selectedFlightBooking == null and selectedHotelBooking == null and !hasActivities}" class="empty-state">
+            <p>No itinerary items yet. Add a flight, accommodation, or activities to build the trip summary.</p>
+        </div>
+
+        <div th:if="${selectedFlightBooking != null or selectedHotelBooking != null or hasActivities}" class="timeline">
+
+            <!-- Flight outbound -->
+            <div th:if="${selectedFlightBooking != null}" class="tl-item flight">
+                <div class="tl-meta"><span class="tag tag-flight">Flight</span> Outbound</div>
+                <div class="tl-title" th:text="${selectedFlightBooking.airline + ' ' + selectedFlightBooking.flightNumber}">Flight</div>
+                <div class="tl-detail" th:text="${selectedFlightBooking.origin + ' to ' + selectedFlightBooking.destination}">Route</div>
+                <div class="tl-detail" th:text="${#temporals.format(selectedFlightBooking.departureDate, 'yyyy-MM-dd HH:mm') + ' to ' + #temporals.format(selectedFlightBooking.arrivalDate, 'yyyy-MM-dd HH:mm')}">Times</div>
+            </div>
+
+            <!-- Hotel check-in -->
+            <div th:if="${selectedHotelBooking != null}" class="tl-item hotel">
+                <div class="tl-meta"><span class="tag tag-hotel">Hotel</span> Check-in</div>
+                <div class="tl-title" th:text="${selectedHotelBooking.hotelName}">Hotel</div>
+                <div class="tl-detail" th:text="${selectedHotelBooking.location}">Location</div>
+                <div class="tl-detail" th:text="${selectedHotelBooking.checkInDate + ' to ' + selectedHotelBooking.checkOutDate}">Dates</div>
+                <div class="tl-detail" th:text="${'$' + selectedHotelBooking.pricePerNight + ' per night'}">Price</div>
+            </div>
+
+            <!-- Activities -->
+            <div th:if="${hasActivities}">
+                <div th:each="activity, iter : ${sortedActivities}">
+                    <div class="day-divider"
+                         th:if="${iter.index == 0 or !sortedActivities[iter.index - 1].date.equals(activity.date)}">
+                        <span class="day-chip">
+                            <span th:text="${activityDayLabels[activity.id]}">Day 1</span>
+                            <span class="day-date" th:text="${activity.date}">2026-03-10</span>
+                        </span>
+                    </div>
+                    <div class="tl-item activity">
+                    <div class="tl-meta">
+                        <span class="tag tag-activity">Activity</span>
+                        <span th:text="${activity.date}">Date</span>
+                        <span th:text="${'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '')}">Time</span>
+                    </div>
+                    <div class="tl-title" th:text="${activity.activityName}">Activity</div>
+                    <div class="tl-detail" th:text="${activity.location}">Location</div>
+                    <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
+                    <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + #numbers.formatDecimal(activity.amount, 1, 2)">Estimated spend</div>
+                    <details style="margin-top:10px;">
+                        <summary style="cursor:pointer; color:var(--teal-dark); font-size:0.82rem; font-weight:600;">Edit date and time</summary>
+                        <form th:action="@{'/activities/' + ${activity.id} + '/edit'}" method="post" style="margin-top:12px;">
+                            <input type="hidden" name="tripId" th:value="${trip.id}">
+                            <input type="hidden" name="view" value="summary">
+                            <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));">
+                                <input name="activityName" type="text" th:value="${activity.activityName}" required>
+                                <input name="location" type="text" th:value="${activity.location}" required>
+                                <input name="date" type="date" th:min="${trip.startDate}" th:max="${trip.endDate}" th:value="${activity.date}" required>
+                                <input name="time" type="time">
+                                <input name="amount" type="number" min="0" step="0.01" th:value="${activity.amount}" placeholder="Amount">
+                            </div>
+                            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:10px;">
+                                Current time:
+                                <strong th:text="${activity.time != null ? activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '') : 'Not set'}">10:00 to 13:00</strong>.
+                                Leave time blank to auto-place it 30 minutes after the previous activity that day.
+                            </div>
+                            <input name="description" type="text" th:value="${activity.description}" placeholder="Optional description" style="margin-top:10px;">
+                            <button type="submit" class="btn btn-ghost btn-sm" style="margin-top:10px;">Save</button>
+                        </form>
+                    </details>
+                </div>
+                </div>
+            </div>
+
+            <!-- Flight return -->
+            <div th:if="${selectedFlightBooking != null}" class="tl-item flight">
+                <div class="tl-meta"><span class="tag tag-flight">Flight</span> Return</div>
+                <div class="tl-title" th:text="${selectedFlightBooking.airline + ' ' + selectedFlightBooking.flightNumber + ' - Return'}">Return Flight</div>
+                <div class="tl-detail" th:text="${selectedFlightBooking.destination + ' to ' + selectedFlightBooking.origin}">Route</div>
+                <div class="tl-detail" th:text="${#temporals.format(selectedFlightBooking.returnDepartureDate, 'yyyy-MM-dd HH:mm') + ' to ' + #temporals.format(selectedFlightBooking.returnArrivalDate, 'yyyy-MM-dd HH:mm')}">Times</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
