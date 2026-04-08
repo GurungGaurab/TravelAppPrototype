@@ -15,6 +15,29 @@ The workflow file is located at `.github/workflows/ci.yml`.
 
 ## Run Locally
 
+## Getting Started
+
+1. *Clone the repository*
+   
+   git clone https://github.com/GurungGaurab/TravelAppPrototype.git
+   cd TravelAppPrototype
+   
+
+2. *Build the project*
+   
+   mvn clean install
+   
+
+3. *Run the application*
+   
+   mvn spring-boot:run
+   
+
+4. *Open in browser*
+   
+   http://localhost:8080
+   
+
 ```bash
 ./mvnw spring-boot:run
 ```
