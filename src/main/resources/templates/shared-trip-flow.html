@@ -134,10 +134,10 @@
             <div th:if="${hasActivities}">
                 <div th:each="activity, iter : ${sortedActivities}">
                     <div class="day-divider"
-                         th:if="${iter.index == 0 or !sortedActivities[iter.index - 1].date.equals(activity.date)}">
+                         th:if="${iter.index == 0 or (activity.date != null and (sortedActivities[iter.index - 1].date == null or !sortedActivities[iter.index - 1].date.equals(activity.date)))}">
                         <span class="day-chip">
-                            <span th:text="${activityDayLabels[activity.id]}">Day 1</span>
-                            <span class="day-date" th:text="${activity.date}">2026-03-10</span>
+                            <span th:text="${activityDayLabels[activity.id] != null ? activityDayLabels[activity.id] : 'Activity'}">Day 1</span>
+                            <span class="day-date" th:text="${activity.date != null ? activity.date : 'Unscheduled'}">2026-03-10</span>
                         </span>
                     </div>
                     <div class="tl-item activity">
@@ -149,7 +149,7 @@
                     <div class="tl-title" th:text="${activity.activityName}">Activity</div>
                     <div class="tl-detail" th:text="${activity.location}">Location</div>
                     <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
-                    <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + #numbers.formatDecimal(activity.amount, 1, 2)">Estimated spend</div>
+                    <div th:if="${activity.amount != null}" class="tl-detail" th:text="${'Estimated spend: $' + #numbers.formatDecimal(activity.amount, 1, 2)}">Estimated spend</div>
                 </div>
                 </div>
             </div>

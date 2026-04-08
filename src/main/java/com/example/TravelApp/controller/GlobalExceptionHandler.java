@@ -12,4 +12,11 @@ public class GlobalExceptionHandler {
         model.addAttribute("errorMessage", exception.getMessage());
         return "error";
     }
+
+    @ExceptionHandler(Exception.class)
+    public String handleAllExceptions(Exception exception, Model model) {
+        exception.printStackTrace();
+        model.addAttribute("errorMessage", exception.getClass().getSimpleName() + ": " + exception.getMessage());
+        return "error";
+    }
 }

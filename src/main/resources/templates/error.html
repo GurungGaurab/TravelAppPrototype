@@ -56,7 +56,9 @@
     <div class="error-card">
         <div class="error-icon">!</div>
         <h1>Something Went Wrong</h1>
-        <p th:text="${errorMessage != null ? errorMessage : 'The page could not be loaded.'}">The page could not be loaded.</p>
+        <p th:text="${errorMessage != null ? errorMessage : (message != null and message != '' ? message : 'The page could not be loaded.')}">The page could not be loaded.</p>
+        <p th:if="${exception != null}" style="font-size:0.75rem; color:var(--coral); margin-bottom:8px;" th:text="${exception}"></p>
+        <p th:if="${trace != null}" style="font-size:0.65rem; color:var(--text-muted); text-align:left; white-space:pre-wrap; max-height:200px; overflow:auto; margin-bottom:16px; background:#f8f8f8; padding:8px; border-radius:6px;" th:text="${trace}"></p>
         <div class="error-links">
             <a href="/" class="btn btn-primary">Home</a>
             <a href="/trips" class="btn btn-ghost">Travel Plans</a>
