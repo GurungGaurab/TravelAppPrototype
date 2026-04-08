@@ -12,4 +12,16 @@ public class GlobalExceptionHandler {
         model.addAttribute("errorMessage", exception.getMessage());
         return "error";
     }
+
+    @ExceptionHandler(Exception.class)
+    public String handleGenericException(Exception exception, Model model) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            message = exception.getClass().getSimpleName();
+        } else {
+            message = exception.getClass().getSimpleName() + ": " + message;
+        }
+        model.addAttribute("errorMessage", message);
+        return "error";
+    }
 }

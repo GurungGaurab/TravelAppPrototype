@@ -144,46 +144,25 @@
 
             <!-- Activities -->
             <div th:if="${hasActivities}">
-                <div th:each="activity, iter : ${sortedActivities}">
-                    <div class="day-divider"
-                         th:if="${iter.index == 0 or !sortedActivities[iter.index - 1].date.equals(activity.date)}">
+                <div th:each="activity : ${sortedActivities}">
+                    <div class="day-divider">
                         <span class="day-chip">
-                            <span th:text="${activityDayLabels[activity.id]}">Day 1</span>
-                            <span class="day-date" th:text="${activity.date}">2026-03-10</span>
+                            <span th:text="${activityDayLabels[activity.id] != null ? activityDayLabels[activity.id] : 'Planned Activity'}">Day 1</span>
+                            <span class="day-date" th:text="${activity.date != null ? activity.date : 'Date not set'}">2026-03-10</span>
                         </span>
                     </div>
                     <div class="tl-item activity">
-                    <div class="tl-meta">
-                        <span class="tag tag-activity">Activity</span>
-                        <span th:text="${activity.date}">Date</span>
-                        <span th:text="${'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '')}">Time</span>
+                        <div class="tl-meta">
+                            <span class="tag tag-activity">Activity</span>
+                            <span th:text="${activity.date != null ? activity.date : 'Date not set'}">Date</span>
+                            <span th:text="${activity.time != null ? 'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '') : 'Time not set'}">Time</span>
+                        </div>
+                        <div class="tl-title" th:text="${activity.activityName != null ? activity.activityName : 'Untitled activity'}">Activity</div>
+                        <div class="tl-detail" th:text="${activity.location != null && !activity.location.isBlank() ? activity.location : 'Location not set'}">Location</div>
+                        <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
+                        <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + activity.amount">Estimated spend</div>
+                        <div class="tl-detail" style="margin-top:8px; color:var(--text-muted);">Edit activities from Trip Details.</div>
                     </div>
-                    <div class="tl-title" th:text="${activity.activityName}">Activity</div>
-                    <div class="tl-detail" th:text="${activity.location}">Location</div>
-                    <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
-                    <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + #numbers.formatDecimal(activity.amount, 1, 2)">Estimated spend</div>
-                    <details style="margin-top:10px;">
-                        <summary style="cursor:pointer; color:var(--teal-dark); font-size:0.82rem; font-weight:600;">Edit date and time</summary>
-                        <form th:action="@{'/activities/' + ${activity.id} + '/edit'}" method="post" style="margin-top:12px;">
-                            <input type="hidden" name="tripId" th:value="${trip.id}">
-                            <input type="hidden" name="view" value="summary">
-                            <div style="display:grid; gap:10px; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));">
-                                <input name="activityName" type="text" th:value="${activity.activityName}" required>
-                                <input name="location" type="text" th:value="${activity.location}" required>
-                                <input name="date" type="date" th:min="${trip.startDate}" th:max="${trip.endDate}" th:value="${activity.date}" required>
-                                <input name="time" type="time">
-                                <input name="amount" type="number" min="0" step="0.01" th:value="${activity.amount}" placeholder="Amount">
-                            </div>
-                            <div style="font-size:0.78rem; color:var(--text-muted); margin-top:10px;">
-                                Current time:
-                                <strong th:text="${activity.time != null ? activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '') : 'Not set'}">10:00 to 13:00</strong>.
-                                Leave time blank to auto-place it 30 minutes after the previous activity that day.
-                            </div>
-                            <input name="description" type="text" th:value="${activity.description}" placeholder="Optional description" style="margin-top:10px;">
-                            <button type="submit" class="btn btn-ghost btn-sm" style="margin-top:10px;">Save</button>
-                        </form>
-                    </details>
-                </div>
                 </div>
             </div>
 

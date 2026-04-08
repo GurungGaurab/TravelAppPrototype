@@ -9,10 +9,22 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Locale;
 
 @Controller
 public class ActivityController {
+    private static final List<DateTimeFormatter> SUPPORTED_TIME_FORMATS = List.of(
+            DateTimeFormatter.ofPattern("H"),
+            DateTimeFormatter.ofPattern("H:mm"),
+            DateTimeFormatter.ofPattern("HH:mm"),
+            DateTimeFormatter.ofPattern("h a", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("ha", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("h:mm a", Locale.ENGLISH),
+            DateTimeFormatter.ofPattern("h:mma", Locale.ENGLISH)
+    );
 
     private final ActivityService activityService;
 
@@ -114,10 +126,35 @@ public class ActivityController {
         if (value == null || value.isBlank()) {
             return null;
         }
-        try {
-            return LocalTime.parse(value.trim());
-        } catch (DateTimeParseException exception) {
-            throw new IllegalArgumentException("Time must use HH:mm format");
+        String normalizedValue = normalizeTimeInput(value);
+        for (DateTimeFormatter formatter : SUPPORTED_TIME_FORMATS) {
+            try {
+                return LocalTime.parse(normalizedValue, formatter);
+            } catch (DateTimeParseException exception) {
+                // Try the next supported format.
+            }
         }
+        throw new IllegalArgumentException("Time must use formats like 2:00 PM or 14:00");
+    }
+
+    private String normalizeTimeInput(String value) {
+        String normalized = value.trim()
+                .toUpperCase(Locale.ENGLISH)
+                .replace('.', ':')
+                .replaceAll("\\s+", " ");
+        normalized = normalized.replaceAll("(?<=\\d)(AM|PM)$", " $1");
+
+        if (normalized.matches("^\\d{1,2} [AP]M$")) {
+            normalized = normalized.replace(" AM", ":00 AM").replace(" PM", ":00 PM");
+        }
+
+        if ((normalized.endsWith(" AM") || normalized.endsWith(" PM"))
+                && normalized.matches("^\\d{1,2}:\\d{2} [AP]M$")) {
+            int hour = Integer.parseInt(normalized.substring(0, normalized.indexOf(':')));
+            if (hour > 12) {
+                return normalized.substring(0, normalized.indexOf(' '));
+            }
+        }
+        return normalized;
     }
 }

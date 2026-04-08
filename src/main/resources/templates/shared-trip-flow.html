@@ -132,25 +132,24 @@
 
             <!-- Activities -->
             <div th:if="${hasActivities}">
-                <div th:each="activity, iter : ${sortedActivities}">
-                    <div class="day-divider"
-                         th:if="${iter.index == 0 or !sortedActivities[iter.index - 1].date.equals(activity.date)}">
+                <div th:each="activity : ${sortedActivities}">
+                    <div class="day-divider">
                         <span class="day-chip">
-                            <span th:text="${activityDayLabels[activity.id]}">Day 1</span>
-                            <span class="day-date" th:text="${activity.date}">2026-03-10</span>
+                            <span th:text="${activityDayLabels[activity.id] != null ? activityDayLabels[activity.id] : 'Planned Activity'}">Day 1</span>
+                            <span class="day-date" th:text="${activity.date != null ? activity.date : 'Date not set'}">2026-03-10</span>
                         </span>
                     </div>
                     <div class="tl-item activity">
-                    <div class="tl-meta">
-                        <span class="tag tag-activity">Activity</span>
-                        <span th:text="${activity.date}">Date</span>
-                        <span th:text="${'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '')}">Time</span>
+                        <div class="tl-meta">
+                            <span class="tag tag-activity">Activity</span>
+                            <span th:text="${activity.date != null ? activity.date : 'Date not set'}">Date</span>
+                            <span th:text="${activity.time != null ? 'at ' + activity.time + (activity.endTime != null ? ' to ' + activity.endTime : '') : 'Time not set'}">Time</span>
+                        </div>
+                        <div class="tl-title" th:text="${activity.activityName != null ? activity.activityName : 'Untitled activity'}">Activity</div>
+                        <div class="tl-detail" th:text="${activity.location != null && !activity.location.isBlank() ? activity.location : 'Location not set'}">Location</div>
+                        <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
+                        <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + activity.amount">Estimated spend</div>
                     </div>
-                    <div class="tl-title" th:text="${activity.activityName}">Activity</div>
-                    <div class="tl-detail" th:text="${activity.location}">Location</div>
-                    <div th:if="${activity.description != null and !activity.description.isBlank()}" class="tl-detail" th:text="${activity.description}">Description</div>
-                    <div th:if="${activity.amount != null}" class="tl-detail" th:text="'Estimated spend: $' + #numbers.formatDecimal(activity.amount, 1, 2)">Estimated spend</div>
-                </div>
                 </div>
             </div>
         </div>
