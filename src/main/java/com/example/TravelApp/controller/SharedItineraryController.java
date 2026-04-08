@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -68,39 +66,32 @@ public class SharedItineraryController {
         return "redirect:/shared-itinerary/" + shareToken + "/flow";
     }
 
-    @Transactional(readOnly = true)
     @GetMapping("/shared-itinerary/{shareToken}/flow")
     public String viewSharedTripFlow(@PathVariable String shareToken, Model model) {
-        try {
-            SharedItinerary sharedItinerary = sharedItineraryService.getByShareToken(shareToken);
-            Trip trip = tripService.getTripById(sharedItinerary.getTrip().getId());
+        SharedItinerary sharedItinerary = sharedItineraryService.getByShareToken(shareToken);
+        Trip trip = sharedItinerary.getTrip();
 
-            FlightBooking selectedFlight = trip.getBookings() != null ? trip.getBookings().stream()
-                    .filter(FlightBooking.class::isInstance)
-                    .map(FlightBooking.class::cast)
-                    .findFirst()
-                    .orElse(null) : null;
-            HotelBooking selectedHotel = trip.getBookings() != null ? trip.getBookings().stream()
-                    .filter(HotelBooking.class::isInstance)
-                    .map(HotelBooking.class::cast)
-                    .findFirst()
-                    .orElse(null) : null;
+        FlightBooking selectedFlight = trip.getBookings().stream()
+                .filter(FlightBooking.class::isInstance)
+                .map(FlightBooking.class::cast)
+                .findFirst()
+                .orElse(null);
+        HotelBooking selectedHotel = trip.getBookings().stream()
+                .filter(HotelBooking.class::isInstance)
+                .map(HotelBooking.class::cast)
+                .findFirst()
+                .orElse(null);
 
-            model.addAttribute("sharedItinerary", sharedItinerary);
-            model.addAttribute("trip", trip);
-            model.addAttribute("selectedFlightBooking", selectedFlight);
-            model.addAttribute("selectedHotelBooking", selectedHotel);
-            List<Activity> sortedActivities = activityService.getOrderedActivities(trip);
-            model.addAttribute("sortedActivities", sortedActivities);
-            model.addAttribute("activityDayLabels", buildActivityDayLabels(trip, sortedActivities));
-            model.addAttribute("hasActivities", !sortedActivities.isEmpty());
-            model.addAttribute("flowItems", buildFlowItems(trip, selectedFlight, selectedHotel));
-            return "shared-trip-flow";
-        } catch (Exception e) {
-            e.printStackTrace();
-            model.addAttribute("errorMessage", e.getClass().getSimpleName() + ": " + e.getMessage());
-            return "error";
-        }
+        model.addAttribute("sharedItinerary", sharedItinerary);
+        model.addAttribute("trip", trip);
+        model.addAttribute("selectedFlightBooking", selectedFlight);
+        model.addAttribute("selectedHotelBooking", selectedHotel);
+        List<Activity> sortedActivities = activityService.getOrderedActivities(trip);
+        model.addAttribute("sortedActivities", sortedActivities);
+        model.addAttribute("activityDayLabels", buildActivityDayLabels(trip, sortedActivities));
+        model.addAttribute("hasActivities", !sortedActivities.isEmpty());
+        model.addAttribute("flowItems", buildFlowItems(trip, selectedFlight, selectedHotel));
+        return "shared-trip-flow";
     }
 
     private List<FlowItem> buildFlowItems(Trip trip, FlightBooking flightBooking, HotelBooking hotelBooking) {
@@ -128,13 +119,11 @@ public class SharedItineraryController {
             for (Activity activity : trip.getItinerary().getActivities()) {
                 LocalDate activityDate = activity.getDate() != null ? activity.getDate() : trip.getStartDate();
                 LocalTime activityTime = activity.getTime() != null ? activity.getTime() : LocalTime.of(10, 0);
-                String loc = activity.getLocation() != null ? activity.getLocation() : "";
-                String desc = activity.getDescription() != null && !activity.getDescription().isBlank() ? " · " + activity.getDescription() : "";
                 items.add(new FlowItem(
                         activityDate.atTime(activityTime),
                         "Activity",
-                        activity.getActivityName() != null ? activity.getActivityName() : "Activity",
-                        loc + desc
+                        activity.getActivityName(),
+                        activity.getLocation() + (activity.getDescription() != null && !activity.getDescription().isBlank() ? " · " + activity.getDescription() : "")
                 ));
             }
         }

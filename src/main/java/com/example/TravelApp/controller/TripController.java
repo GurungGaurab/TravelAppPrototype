@@ -149,13 +149,11 @@ public class TripController {
             for (Activity activity : trip.getItinerary().getActivities()) {
                 LocalDate activityDate = activity.getDate() != null ? activity.getDate() : trip.getStartDate();
                 LocalTime activityTime = activity.getTime() != null ? activity.getTime() : LocalTime.of(10, 0);
-                String loc = activity.getLocation() != null ? activity.getLocation() : "";
-                String desc = activity.getDescription() != null && !activity.getDescription().isBlank() ? " · " + activity.getDescription() : "";
                 items.add(new FlowItem(
                         activityDate.atTime(activityTime),
                         "Activity",
-                        activity.getActivityName() != null ? activity.getActivityName() : "Activity",
-                        loc + desc
+                        activity.getActivityName(),
+                        activity.getLocation() + (activity.getDescription() != null && !activity.getDescription().isBlank() ? " · " + activity.getDescription() : "")
                 ));
             }
         }

@@ -14,9 +14,14 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public String handleAllExceptions(Exception exception, Model model) {
-        exception.printStackTrace();
-        model.addAttribute("errorMessage", exception.getClass().getSimpleName() + ": " + exception.getMessage());
+    public String handleGenericException(Exception exception, Model model) {
+        String message = exception.getMessage();
+        if (message == null || message.isBlank()) {
+            message = exception.getClass().getSimpleName();
+        } else {
+            message = exception.getClass().getSimpleName() + ": " + message;
+        }
+        model.addAttribute("errorMessage", message);
         return "error";
     }
 }

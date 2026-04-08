@@ -63,6 +63,33 @@ public class ActivityService {
                                      Double amount,
                                      String expenseCategory,
                                      String expenseDescription) {
+        return addActivityToTrip(
+                tripId,
+                ownerEmail,
+                activityName,
+                description,
+                date,
+                time,
+                location,
+                amount,
+                expenseCategory,
+                expenseDescription,
+                true
+        );
+    }
+
+    @Transactional
+    public boolean addActivityToTrip(Long tripId,
+                                     String ownerEmail,
+                                     String activityName,
+                                     String description,
+                                     LocalDate date,
+                                     LocalTime time,
+                                     String location,
+                                     Double amount,
+                                     String expenseCategory,
+                                     String expenseDescription,
+                                     boolean keepRequestedDate) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
 
@@ -86,7 +113,7 @@ public class ActivityService {
         }
 
         Double normalizedAmount = normalizeAmount(amount);
-        ActivitySlot resolvedSlot = resolveActivitySlot(trip, itinerary, date, time, null);
+        ActivitySlot resolvedSlot = resolveActivitySlot(trip, itinerary, date, time, null, !keepRequestedDate);
         validateActivityWithinTrip(trip, resolvedSlot.date());
         Activity activity = new Activity(
                 normalizedActivityName,
@@ -155,7 +182,7 @@ public class ActivityService {
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
 
         Itinerary itinerary = trip.getItinerary();
-        return resolveActivitySlot(trip, itinerary, targetDate, null, null);
+        return resolveActivitySlot(trip, itinerary, targetDate, null, null, true);
     }
 
     @Transactional
@@ -267,7 +294,8 @@ public class ActivityService {
 
         String previousActivityName = activity.getActivityName();
         LocalDate previousDate = activity.getDate();
-        ActivitySlot resolvedSlot = resolveActivitySlot(trip, itinerary, date, time, activityId);
+        boolean allowNextDayOverflow = time != null;
+        ActivitySlot resolvedSlot = resolveActivitySlot(trip, itinerary, date, time, activityId, allowNextDayOverflow);
         validateActivityWithinTrip(trip, resolvedSlot.date());
         Integer nextOrderForNewDate = sameDate(previousDate, resolvedSlot.date())
                 ? activity.getDisplayOrder()
@@ -372,54 +400,97 @@ public class ActivityService {
                 .count() + 1;
     }
 
-    private ActivitySlot resolveActivitySlot(Trip trip, Itinerary itinerary, LocalDate targetDate, LocalTime requestedTime, Long excludeActivityId) {
+    private ActivitySlot resolveActivitySlot(Trip trip,
+                                             Itinerary itinerary,
+                                             LocalDate targetDate,
+                                             LocalTime requestedTime,
+                                             Long excludeActivityId,
+                                             boolean allowNextDayOverflow) {
         LocalDate safeDate = targetDate != null ? targetDate : LocalDate.now();
+        if (trip != null && trip.getEndDate() != null && safeDate.isAfter(trip.getEndDate())) {
+            throw new IllegalArgumentException("You are going over your stay");
+        }
         LocalTime safeRequestedTime = normalizeRequestedTime(requestedTime);
         FlightBooking flightBooking = getSelectedFlightBooking(trip);
         LocalTime earliestAllowedStart = getEarliestAllowedStart(flightBooking, safeDate);
         LocalTime latestAllowedStart = getLatestAllowedStart(flightBooking, safeDate);
 
         if (safeRequestedTime != null) {
-            LocalTime adjustedRequestedTime = safeRequestedTime;
-            if (adjustedRequestedTime.isBefore(earliestAllowedStart)) {
-                adjustedRequestedTime = earliestAllowedStart;
+            boolean isLastTripDay = trip != null && trip.getEndDate() != null && safeDate.equals(trip.getEndDate());
+            if (isLastTripDay && safeRequestedTime.isAfter(latestAllowedStart)) {
+                throw new IllegalArgumentException("You are going over your stay");
             }
-            if (adjustedRequestedTime.isAfter(latestAllowedStart)) {
-                return resolveActivitySlot(trip, itinerary, safeDate.plusDays(1), null, excludeActivityId);
-            }
-            return new ActivitySlot(safeDate, adjustedRequestedTime);
+            return new ActivitySlot(safeDate, safeRequestedTime);
         }
 
         if (itinerary == null || itinerary.getActivities() == null) {
             if (earliestAllowedStart.isAfter(latestAllowedStart)) {
-                return resolveActivitySlot(trip, itinerary, safeDate.plusDays(1), null, excludeActivityId);
+                if (!allowNextDayOverflow) {
+                    throw scheduleFullException(safeDate);
+                }
+                return resolveActivitySlot(trip, itinerary, safeDate.plusDays(1), null, excludeActivityId, true);
             }
             return new ActivitySlot(safeDate, maxTime(DEFAULT_ACTIVITY_START, earliestAllowedStart));
         }
 
-        LocalTime nextTime = itinerary.getActivities().stream()
-                .filter(activity -> sameDate(activity.getDate(), safeDate))
-                .filter(activity -> excludeActivityId == null || activity.getId() == null || !activity.getId().equals(excludeActivityId))
-                .map(Activity::getEndTime)
-                .filter(endTime -> endTime != null)
-                .max(LocalTime::compareTo)
-                .map(endTime -> endTime.plusMinutes(ACTIVITY_GAP_MINUTES))
-                .orElse(DEFAULT_ACTIVITY_START);
-        nextTime = maxTime(nextTime, earliestAllowedStart);
-        LocalTime candidateNextTime = nextTime;
-
-        boolean wrappedPastMidnight = itinerary.getActivities().stream()
-                .filter(activity -> sameDate(activity.getDate(), safeDate))
-                .filter(activity -> excludeActivityId == null || activity.getId() == null || !activity.getId().equals(excludeActivityId))
-                .map(Activity::getEndTime)
-                .filter(endTime -> endTime != null)
-                .anyMatch(endTime -> candidateNextTime.isBefore(endTime));
-
-        if (wrappedPastMidnight || nextTime.isAfter(latestAllowedStart)) {
-            return resolveActivitySlot(trip, itinerary, safeDate.plusDays(1), null, excludeActivityId);
+        LocalTime nextTime = findNextAvailableStart(itinerary, safeDate, earliestAllowedStart, latestAllowedStart, excludeActivityId);
+        if (nextTime == null) {
+            if (!allowNextDayOverflow) {
+                throw scheduleFullException(safeDate);
+            }
+            return resolveActivitySlot(trip, itinerary, safeDate.plusDays(1), null, excludeActivityId, true);
         }
 
         return new ActivitySlot(safeDate, nextTime);
+    }
+
+    private IllegalArgumentException scheduleFullException(LocalDate date) {
+        return new IllegalArgumentException("Schedule full for " + date + ". Please pick another date or time.");
+    }
+
+    private LocalTime findNextAvailableStart(Itinerary itinerary,
+                                             LocalDate targetDate,
+                                             LocalTime earliestAllowedStart,
+                                             LocalTime latestAllowedStart,
+                                             Long excludeActivityId) {
+        if (earliestAllowedStart.isAfter(latestAllowedStart)) {
+            return null;
+        }
+
+        LocalTime candidate = maxTime(DEFAULT_ACTIVITY_START, earliestAllowedStart);
+        List<Activity> sameDayActivities = itinerary.getActivities().stream()
+                .filter(activity -> sameDate(activity.getDate(), targetDate))
+                .filter(activity -> excludeActivityId == null || activity.getId() == null || !activity.getId().equals(excludeActivityId))
+                .filter(activity -> activity.getTime() != null && activity.getEndTime() != null)
+                .sorted(Comparator.comparing(Activity::getTime))
+                .toList();
+
+        for (Activity existingActivity : sameDayActivities) {
+            LocalTime existingStart = existingActivity.getTime();
+            if (existingStart == null) {
+                continue;
+            }
+            if (fitsBefore(candidate, existingStart) && !candidate.isAfter(latestAllowedStart)) {
+                return candidate;
+            }
+
+            LocalTime nextCandidate = existingActivity.getEndTime();
+            if (nextCandidate == null) {
+                continue;
+            }
+            candidate = maxTime(candidate, nextCandidate.plusMinutes(ACTIVITY_GAP_MINUTES));
+        }
+
+        if (candidate.isAfter(latestAllowedStart)) {
+            return null;
+        }
+        return candidate;
+    }
+
+    private boolean fitsBefore(LocalTime candidateStart, LocalTime nextActivityStart) {
+        return !candidateStart.plusHours(ACTIVITY_DURATION_HOURS)
+                .plusMinutes(ACTIVITY_GAP_MINUTES)
+                .isAfter(nextActivityStart);
     }
 
     private Comparator<Activity> activityComparator() {
