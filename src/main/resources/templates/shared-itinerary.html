@@ -142,13 +142,31 @@
             <div th:each="share : ${sharedItineraries}" class="share-item">
                 <strong th:text="${share.trip.tripName}">Trip</strong>
                 <span style="color:var(--text-muted);" th:text="${share.trip.destination}">Dest</span>
-                <a th:href="@{'/trips/' + ${share.trip.id}}">Open plan</a>
-                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}">View itinerary</a>
-                <span class="share-token" th:text="${'/shared-itinerary/' + share.shareToken}">link</span>
+                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}" target="_blank">Open</a>
+                <input type="text" readonly th:value="${'http://localhost:8080/shared-itinerary/' + share.shareToken}" style="flex:1; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.78rem; font-family:monospace; background:var(--bg); color:var(--text-sec); min-width:0;" th:id="${'si-' + share.id}">
+                <button type="button" class="btn btn-ghost btn-sm" th:onclick="'copyLink(\'si-' + ${share.id} + '\')'">Copy</button>
                 <span class="share-badge" th:text="${share.accessLevel}">VIEW</span>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function copyLink(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.select();
+    navigator.clipboard.writeText(input.value).then(function() {
+        const btn = input.parentElement.querySelector('button');
+        if (btn) {
+            const original = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.style.background = 'var(--teal)';
+            btn.style.color = '#fff';
+            setTimeout(function() { btn.textContent = original; btn.style.background = ''; btn.style.color = ''; }, 2000);
+        }
+    });
+}
+</script>
 </body>
 </html>

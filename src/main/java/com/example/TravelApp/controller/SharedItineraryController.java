@@ -58,7 +58,7 @@ public class SharedItineraryController {
     @PostMapping("/shared-itinerary")
     public String createSharedItinerary(@RequestParam Long tripId, Principal principal) {
         SharedItinerary sharedItinerary = sharedItineraryService.createSharedItinerary(tripId, principal.getName());
-        return "redirect:/shared-itinerary/" + sharedItinerary.getShareToken();
+        return "redirect:/trips/" + tripId + "?shared=" + sharedItinerary.getShareToken();
     }
 
     @GetMapping("/shared-itinerary/{shareToken}")

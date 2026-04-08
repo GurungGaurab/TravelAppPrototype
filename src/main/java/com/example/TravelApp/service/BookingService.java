@@ -7,6 +7,7 @@ import com.example.TravelApp.model.Trip;
 import com.example.TravelApp.repository.BookingsRepository;
 import com.example.TravelApp.repository.TripRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -118,6 +119,7 @@ public class BookingService {
         return options;
     }
 
+    @Transactional
     public void createBookingFromOption(Long tripId, String ownerEmail, String bookingType, String optionId) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
@@ -203,6 +205,7 @@ public class BookingService {
         }
     }
 
+    @Transactional
     public void cancelBooking(Long tripId, Long bookingId, String ownerEmail) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
@@ -295,7 +298,6 @@ public class BookingService {
         booking.setTrip(trip);
         trip.getBookings().add(booking);
         tripRepository.save(trip);
-        bookingsRepository.save(booking);
     }
 
     public record FlightOption(

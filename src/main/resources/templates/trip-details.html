@@ -134,6 +134,15 @@
             .form-row { grid-template-columns: 1fr; }
             .reco-grid { grid-template-columns: 1fr; }
         }
+
+        /* Share success */
+        .share-success {
+            background: #f0fdfa;
+            border: 1.5px solid var(--teal);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            margin-bottom: 14px;
+        }
     </style>
 </head>
 <body>
@@ -220,14 +229,28 @@
     <div class="card">
         <div class="card-title"><span class="icon icon-plum">S</span> Share This Trip</div>
         <p style="font-size:0.85rem; color:var(--text-sec); margin-bottom:14px;">Anyone with the shared link can open the itinerary, even without logging in.</p>
+
+        <!-- Success message after creating share link -->
+        <div id="shareSuccess" class="share-success" style="display:none;">
+            <div style="font-weight:700; margin-bottom:6px; color:var(--teal-dark);">Share link created!</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input id="newShareUrl" type="text" readonly style="flex:1; padding:8px 12px; border:1.5px solid var(--teal); border-radius:var(--radius); font-size:0.85rem; font-family:monospace; background:#f0fdfa; color:var(--text);">
+                <button type="button" class="btn btn-primary btn-sm" onclick="copyShareLink('newShareUrl')">Copy</button>
+                <a id="newShareOpen" href="#" target="_blank" class="btn btn-ghost btn-sm">Open</a>
+            </div>
+        </div>
+
         <form action="/shared-itinerary" method="post" style="margin-bottom:12px;">
             <input type="hidden" name="tripId" th:value="${trip.id}">
             <button type="submit" class="btn btn-accent btn-sm">Create Share Link</button>
         </form>
+
         <div th:if="${!#lists.isEmpty(sharedItineraries)}">
+            <h4 style="font-size:0.85rem; font-weight:700; margin-bottom:10px; color:var(--text-sec);">Existing Share Links</h4>
             <div th:each="share : ${sharedItineraries}" class="share-item">
-                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}">Open itinerary</a>
-                <span class="share-token" th:text="${'/shared-itinerary/' + share.shareToken}">link</span>
+                <a th:href="@{'/shared-itinerary/' + ${share.shareToken}}" target="_blank">Open</a>
+                <input type="text" readonly th:value="${'http://localhost:8080/shared-itinerary/' + share.shareToken}" style="flex:1; padding:6px 10px; border:1px solid var(--border); border-radius:6px; font-size:0.78rem; font-family:monospace; background:var(--bg); color:var(--text-sec); min-width:0;" th:id="${'share-' + share.id}">
+                <button type="button" class="btn btn-ghost btn-sm" th:onclick="'copyShareLink(\'share-' + ${share.id} + '\')'">Copy</button>
                 <span class="share-badge" th:text="${share.accessLevel}">VIEW</span>
                 <span style="font-size:0.78rem; color:var(--text-muted);" th:text="${#temporals.format(share.createdAt, 'yyyy-MM-dd HH:mm')}">Created</span>
             </div>
@@ -466,6 +489,7 @@
 </div>
 
 <script>
+    // Activity date range enforcement
     const activityDateInput = document.querySelector('input[name="date"]');
     if (activityDateInput) {
         const minDate = activityDateInput.getAttribute("min");
@@ -473,6 +497,43 @@
         if (activityDateInput.value && minDate && activityDateInput.value < minDate) { activityDateInput.value = minDate; }
         if (activityDateInput.value && maxDate && activityDateInput.value > maxDate) { activityDateInput.value = maxDate; }
     }
+
+    // Copy share link to clipboard
+    function copyShareLink(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.select();
+        navigator.clipboard.writeText(input.value).then(function() {
+            const btn = input.parentElement.querySelector('button');
+            if (btn) {
+                const original = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = 'var(--teal)';
+                btn.style.color = '#fff';
+                setTimeout(function() { btn.textContent = original; btn.style.background = ''; btn.style.color = ''; }, 2000);
+            }
+        });
+    }
+
+    // Show success message if ?shared= param exists
+    (function() {
+        const params = new URLSearchParams(window.location.search);
+        const sharedToken = params.get('shared');
+        if (sharedToken) {
+            const successBox = document.getElementById('shareSuccess');
+            const urlInput = document.getElementById('newShareUrl');
+            const openLink = document.getElementById('newShareOpen');
+            const fullUrl = window.location.origin + '/shared-itinerary/' + sharedToken;
+            if (successBox && urlInput) {
+                urlInput.value = fullUrl;
+                openLink.href = fullUrl;
+                successBox.style.display = 'block';
+                successBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            // Clean URL without reload
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    })();
 </script>
 </body>
 </html>

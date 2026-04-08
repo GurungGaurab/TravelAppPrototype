@@ -163,12 +163,11 @@
         <div class="page-section">
             <div class="section-header">
                 <h2 class="section-title">Your Travel Plans</h2>
-                <a href="/trips" class="btn btn-primary btn-sm">Create New Trip</a>
+                <a href="/trips" class="btn btn-primary btn-sm">Create Travel Plan</a>
             </div>
 
             <div th:if="${#lists.isEmpty(trips)}" class="empty-state">
-                <p>No travel plans yet. Create your first trip to get started.</p>
-                <a href="/trips" class="btn btn-primary" style="margin-top:12px;">Create Travel Plan</a>
+                <p>No travel plans yet. Head to Travel Plans to create your first trip.</p>
             </div>
 
             <div th:unless="${#lists.isEmpty(trips)}" class="trips-grid">

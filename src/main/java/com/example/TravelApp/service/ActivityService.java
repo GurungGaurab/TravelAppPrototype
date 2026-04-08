@@ -7,6 +7,7 @@ import com.example.TravelApp.model.Trip;
 import com.example.TravelApp.repository.ActivityRepository;
 import com.example.TravelApp.repository.TripRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +41,7 @@ public class ActivityService {
         this.budgetService = budgetService;
     }
 
+    @Transactional
     public boolean addActivityToTrip(Long tripId,
                                      String ownerEmail,
                                      String activityName,
@@ -50,6 +52,7 @@ public class ActivityService {
         return addActivityToTrip(tripId, ownerEmail, activityName, description, date, time, location, null, null, null);
     }
 
+    @Transactional
     public boolean addActivityToTrip(Long tripId,
                                      String ownerEmail,
                                      String activityName,
@@ -110,6 +113,7 @@ public class ActivityService {
         return true;
     }
 
+    @Transactional
     public void cleanupDuplicateActivitiesForTrip(Long tripId, String ownerEmail) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
@@ -154,6 +158,7 @@ public class ActivityService {
         return resolveActivitySlot(trip, itinerary, targetDate, null, null);
     }
 
+    @Transactional
     public void removeActivityFromTrip(Long tripId, Long activityId, String ownerEmail) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
@@ -187,6 +192,7 @@ public class ActivityService {
         );
     }
 
+    @Transactional
     public void moveActivity(Long tripId, Long activityId, String ownerEmail, boolean moveUp) {
         Trip trip = tripRepository.findByIdAndUserEmail(tripId, ownerEmail)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found for this user"));
